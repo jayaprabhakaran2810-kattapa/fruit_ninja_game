@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Ninja - Hand Gesture Game</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🍉 Fruit Ninja - Hand Gesture Edition</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Score:</span>
+                    <span id="score" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">High Score:</span>
+                    <span id="highScore" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Lives:</span>
+                    <span id="lives" class="stat-value">❤️❤️❤️</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Game Area -->
+        <div class="game-wrapper">
+            <div class="game-container">
+                <video id="videoElement" class="video-feed" autoplay playsinline></video>
+                <canvas id="gameCanvas"></canvas>
+                <canvas id="handCanvas"></canvas>
+                
+                <!-- Game Over Screen -->
+                <div id="gameOverScreen" class="game-over hidden">
+                    <h2>🎮 Game Over!</h2>
+                    <p class="final-score-text">Final Score: <span id="finalScore">0</span></p>
+                    <p class="high-score-text">High Score: <span id="finalHighScore">0</span></p>
+                    <button id="restartBtn" class="btn btn-primary">🔄 Play Again</button>
+                </div>
+
+                <!-- Start Screen -->
+                <div id="startScreen" class="start-screen">
+                    <h2>🎯 Welcome to Fruit Ninja!</h2>
+                    <p class="subtitle">Use your hand to slice falling fruits</p>
+                    <div class="instructions">
+                        <p>✋ Allow camera access</p>
+                        <p>👆 Use all 5 finger tips to slice fruits</p>
+                        <p>🎯 Slice as many fruits as possible!</p>
+                        <p>💣 <strong>AVOID BOMBS!</strong> Don't touch the red glowing bombs</p>
+                        <p>❌ Don't miss 3 fruits or game over</p>
+                    </div>
+                    <button id="startBtn" class="btn btn-primary">▶️ Start Game</button>
+                </div>
+
+                <!-- Loading Screen -->
+                <div id="loadingScreen" class="loading-screen hidden">
+                    <div class="spinner"></div>
+                    <p>Loading hand tracking...</p>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h3>⚙️ Settings</h3>
+                
+                <div class="control-group">
+                    <label for="fruitType">Object Type:</label>
+                    <select id="fruitType" class="control-select">
+                        <option value="fruits">🍎 Fruits</option>
+                        <option value="vegetables">🥕 Vegetables</option>
+                        <option value="mixed">🍇 Mixed</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="difficulty">Difficulty:</label>
+                    <select id="difficulty" class="control-select">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span>🔊 Enable Sound</span>
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showHandTracking" checked>
+                        <span>👁️ Show Hand Tracking</span>
+                    </label>
+                </div>
+
+                <button id="pauseBtn" class="btn btn-secondary" disabled>⏸️ Pause</button>
+                
+                <div class="info-section">
+                    <h4>📊 Game Stats</h4>
+                    <p>Fruits Sliced: <span id="slicedCount">0</span></p>
+                    <p>Fruits Missed: <span id="missedCount">0</span></p>
+                    <p>Accuracy: <span id="accuracy">0</span>%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera Status -->
+        <div id="cameraStatus" class="camera-status hidden">
+            <p>📸 Initializing camera...</p>
+        </div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
