@@ -4,7 +4,7 @@ A web-based Fruit Ninja game controlled by hand gestures using your webcam!
 
 ## 🎮 Features
 
-- **Hand Gesture Control**: Use your index finger to slice fruits
+- **Hand Gesture Control**: Use all five fingertips from both hands to slice fruits
 - **MediaPipe Hand Tracking**: Real-time hand detection
 - **Multiple Game Modes**: Fruits, Vegetables, or Mixed
 - **Difficulty Levels**: Easy, Medium, Hard
@@ -138,20 +138,34 @@ surge
 ## 🎯 How to Play
 
 1. **Allow camera access** when prompted by your browser
-2. **Show your hand** to the camera (make sure it's well lit)
-3. **Point your index finger** toward falling fruits to slice them
+2. **Show your hand(s)** to the camera (make sure it's well lit)
+3. **Use any fingertip** (thumb, index, middle, ring, or pinky) to slice fruits - both hands work!
 4. **Earn 10 points** for each fruit sliced
-5. **Don't miss more than 3 fruits** or it's game over!
+5. **Avoid bombs** (💣) - slicing them loses a life!
+6. **Don't miss fruits** - you have 3 lives, lose them all and it's game over!
+7. **Speed increases** by 10% every 5 seconds - stay sharp!
 
 ## ⚙️ Game Settings
 
+- **Player Name**: Enter your name to personalize your game session
 - **Object Type**: Choose between Fruits 🍎, Vegetables 🥕, or Mixed 🍇
 - **Difficulty**: 
-  - Easy: Slower fall speed, longer spawn intervals
-  - Medium: Balanced gameplay
-  - Hard: Fast and challenging!
+  - Easy: Slower spawn rate (2000ms), 10% bomb chance
+  - Medium: Balanced gameplay (1500ms spawn), 15% bomb chance
+  - Hard: Fast and challenging (1000ms spawn), 20% bomb chance!
 - **Sound**: Toggle sound effects on/off
 - **Hand Tracking**: Show/hide the hand skeleton overlay
+
+### Game Mechanics
+
+- **Lives**: Start with 3 lives
+  - Lose a life when you miss a fruit
+  - Lose a life when you slice a bomb 💣
+  - Successfully avoiding a bomb = no penalty!
+- **Speed Progression**: Difficulty increases by 10% every 5 seconds
+- **Bombs**: Random bombs spawn based on difficulty - avoid slicing them!
+- **Two-Hand Support**: Use both hands simultaneously for better coverage
+- **Stats Tracking**: View your accuracy, sliced count, and missed count
 
 ## 🛠️ Technical Stack
 
@@ -194,16 +208,19 @@ surge
 - ✓ Use Chrome for best performance
 
 ### Fruits not slicing?
-- ✓ Ensure your index finger tip (red dot) touches the fruit
-- ✓ Check if hand tracking is active (green skeleton visible)
-- ✓ Make deliberate pointing gestures
+- ✓ Ensure any fingertip (thumb, index, middle, ring, or pinky) touches the fruit
+- ✓ All five fingertips from both hands are tracked (shown as colored dots)
+- ✓ Check if hand tracking is active (green/cyan skeleton visible)
+- ✓ Try using different fingers or both hands for better coverage
 
 ## 🎨 Customization
 
 Want to customize the game? Here are some easy tweaks:
 
 ### Change Fruit Emojis
+
 Edit `main.js` and modify the `fruitEmojis` object:
+
 ```javascript
 const fruitEmojis = {
     fruits: ['🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓'],
@@ -212,16 +229,32 @@ const fruitEmojis = {
 ```
 
 ### Adjust Difficulty
+
 Modify `difficultySettings` in `main.js`:
+
 ```javascript
 const difficultySettings = {
-    easy: { spawnRate: 2000, fallSpeed: 2 },
-    // Customize spawn rate (ms) and fall speed
+    easy: { spawnRate: 2000, fallSpeed: 1.0, bombChance: 0.1 },
+    medium: { spawnRate: 1500, fallSpeed: 1.0, bombChance: 0.15 },
+    hard: { spawnRate: 1000, fallSpeed: 1.0, bombChance: 0.2 }
+    // Customize spawn rate (ms), fall speed, and bomb chance
 };
 ```
 
+### Adjust Speed Progression
+
+Modify the speed increase interval in `main.js` at `gameLoop()`:
+
+```javascript
+// Change from every 5 seconds to your preferred interval
+const speedIncreaseIntervals = Math.floor(elapsedSeconds / 5);
+gameState.speedMultiplier = 1 + (speedIncreaseIntervals * 0.1); // 10% per interval
+```
+
 ### Change Color Scheme
+
 Edit `style.css` and update the gradient colors:
+
 ```css
 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 ```
