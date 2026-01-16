@@ -17,7 +17,8 @@ const gameState = {
     soundEnabled: true,
     showHandTracking: true,
     gameStartTime: 0,
-    speedMultiplier: 1
+    speedMultiplier: 1,
+    playerName: localStorage.getItem('fruitNinjaPlayerName') || 'Guest'
 };
 
 // Fruit/Vegetable Emojis - 30+ varieties each
@@ -68,6 +69,10 @@ const loadingScreen = document.getElementById('loadingScreen');
 const cameraStatus = document.getElementById('cameraStatus');
 const finalScoreEl = document.getElementById('finalScore');
 const finalHighScoreEl = document.getElementById('finalHighScore');
+const playerNameInput = document.getElementById('playerNameInput');
+const playerNameDisplay = document.getElementById('playerNameDisplay');
+const playerNameEl = document.getElementById('playerName');
+const gameOverPlayerNameEl = document.getElementById('gameOverPlayerName');
 
 // Stats Elements
 const slicedCountEl = document.getElementById('slicedCount');
@@ -107,13 +112,23 @@ function init() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Display high score
+    // Display high score and player name
     highScoreEl.textContent = gameState.highScore;
+    playerNameInput.value = gameState.playerName === 'Guest' ? '' : gameState.playerName;
     
     // Event Listeners
     startBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('click', restartGame);
     pauseBtn.addEventListener('click', togglePause);
+    
+    // Save player name when typing
+    playerNameInput.addEventListener('input', (e) => {
+        const name = e.target.value.trim();
+        if (name) {
+            gameState.playerName = name;
+            localStorage.setItem('fruitNinjaPlayerName', name);
+        }
+    });
     
     fruitTypeSelect.addEventListener('change', (e) => {
         gameState.fruitType = e.target.value;
@@ -638,6 +653,19 @@ function spawnFruit() {
 
 // Start Game
 async function startGame() {
+    // Get and store player name
+    const name = playerNameInput.value.trim();
+    if (name) {
+        gameState.playerName = name;
+        localStorage.setItem('fruitNinjaPlayerName', name);
+    } else {
+        gameState.playerName = 'Guest';
+    }
+    
+    // Show player name in header
+    playerNameEl.textContent = gameState.playerName;
+    playerNameDisplay.style.display = 'flex';
+    
     startScreen.classList.add('hidden');
     pauseBtn.disabled = false;
     
@@ -703,6 +731,9 @@ function gameOver() {
         localStorage.setItem('fruitNinjaHighScore', gameState.highScore);
     }
     
+    // Display player name in game over screen
+    gameOverPlayerNameEl.textContent = gameState.playerName !== 'Guest' ? gameState.playerName : '';
+    
     finalScoreEl.textContent = gameState.score;
     finalHighScoreEl.textContent = gameState.highScore;
     gameOverScreen.classList.remove('hidden');
@@ -714,7 +745,7 @@ function gameLoop() {
     
     // Update speed multiplier based on elapsed time
     const elapsedSeconds = (Date.now() - gameState.gameStartTime) / 1000;
-    const speedIncreaseIntervals = Math.floor(elapsedSeconds / 7);
+    const speedIncreaseIntervals = Math.floor(elapsedSeconds / 5);
     gameState.speedMultiplier = 1 + (speedIncreaseIntervals * 0.1);
     
     // Clear canvas

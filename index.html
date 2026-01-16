@@ -24,6 +24,10 @@
                     <span class="stat-label">Lives:</span>
                     <span id="lives" class="stat-value">❤️❤️❤️</span>
                 </div>
+                <div class="stat-item" id="playerNameDisplay" style="display: none;">
+                    <span class="stat-label">Player:</span>
+                    <span id="playerName" class="stat-value">Guest</span>
+                </div>
             </div>
         </header>
 
@@ -36,7 +40,7 @@
                 
                 <!-- Game Over Screen -->
                 <div id="gameOverScreen" class="game-over hidden">
-                    <h2>🎮 Game Over!</h2>
+                    <h2>🎮 Game Over <span id="gameOverPlayerName"></span>!</h2>
                     <p class="final-score-text">Final Score: <span id="finalScore">0</span></p>
                     <p class="high-score-text">High Score: <span id="finalHighScore">0</span></p>
                     <button id="restartBtn" class="btn btn-primary">🔄 Play Again</button>
@@ -46,6 +50,10 @@
                 <div id="startScreen" class="start-screen">
                     <h2>🎯 Welcome to Fruit Ninja!</h2>
                     <p class="subtitle">Use your hand to slice falling fruits</p>
+                    <div class="name-input-container">
+                        <label for="playerNameInput">👤 Enter Your Name:</label>
+                        <input type="text" id="playerNameInput" placeholder="Your Name" maxlength="20" />
+                    </div>
                     <div class="instructions">
                         <p>✋ Allow camera access</p>
                         <p>👆 Use all 5 finger tips to slice fruits</p>
