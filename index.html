@@ -50,9 +50,12 @@
                 <div id="startScreen" class="start-screen">
                     <h2>🎯 Welcome to Fruit Ninja!</h2>
                     <p class="subtitle">Use your hands to slice falling fruits</p>
-                    <div class="name-input-container">
-                        <label for="playerNameInput">👤 Enter Your Name:</label>
-                        <input type="text" id="playerNameInput" placeholder="Your Name" maxlength="20" />
+                    <div class="name-input-wrapper">
+                        <div class="name-input-container">
+                            <label for="playerNameInput">👤 Enter Your Name:</label>
+                            <input type="text" id="playerNameInput" placeholder="Your Name" maxlength="20" />
+                        </div>
+                        <button id="startBtn" class="btn btn-primary">▶️ Start Game</button>
                     </div>
                     <div class="instructions">
                         <p>✋ Allow camera access</p>
@@ -62,7 +65,6 @@
                         <p>❤️ You have 3 lives - lose them all and it's game over</p>
                         <p>⚡ Speed increases by 10% every 5 seconds!</p>
                     </div>
-                    <button id="startBtn" class="btn btn-primary">▶️ Start Game</button>
                 </div>
 
                 <!-- Loading Screen -->
