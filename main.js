@@ -14,7 +14,7 @@ const gameState = {
     difficulty: 'medium',
     fruitType: 'fruits',
     soundEnabled: true,
-    showHandTracking: true,
+    showHandTracking: false,
     gameStartTime: 0,
     speedMultiplier: 1,
     playerName: localStorage.getItem('fruitNinjaPlayerName') || 'Guest'
