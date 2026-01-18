@@ -326,11 +326,11 @@ async function setupHandTracking() {
         console.log('MediaPipe libraries loaded successfully');
         
         // Initialize Hands using global window object
+        // Don't specify locateFile - let MediaPipe use default CDN paths
         hands = new window.Hands({
             locateFile: (file) => {
-                const path = `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`;
-                console.log('Loading MediaPipe file:', path);
-                return path;
+                // Use jsdelivr CDN with correct path structure
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
             }
         });
         
