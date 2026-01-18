@@ -1,6 +1,5 @@
-// MediaPipe Hands Setup
-import { Hands } from '@mediapipe/hands';
-import { Camera } from '@mediapipe/camera_utils';
+// MediaPipe is loaded via CDN scripts in HTML
+// Access via window object for production compatibility
 
 // Game State
 const gameState = {
@@ -315,8 +314,19 @@ async function setupHandTracking() {
     try {
         console.log('Starting hand tracking setup...');
         
-        // Initialize Hands with CDN path for production compatibility
-        hands = new Hands({
+        // Check if MediaPipe is loaded from CDN
+        if (typeof window.Hands === 'undefined') {
+            throw new Error('MediaPipe Hands library not loaded. Please refresh the page.');
+        }
+        
+        if (typeof window.Camera === 'undefined') {
+            throw new Error('MediaPipe Camera library not loaded. Please refresh the page.');
+        }
+        
+        console.log('MediaPipe libraries loaded successfully');
+        
+        // Initialize Hands using global window object
+        hands = new window.Hands({
             locateFile: (file) => {
                 const path = `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`;
                 console.log('Loading MediaPipe file:', path);
@@ -345,7 +355,7 @@ async function setupHandTracking() {
             throw new Error('Camera API not supported in this browser. Please use Chrome, Firefox, or Edge.');
         }
         
-        camera = new Camera(videoElement, {
+        camera = new window.Camera(videoElement, {
             onFrame: async () => {
                 if (hands) {
                     try {
