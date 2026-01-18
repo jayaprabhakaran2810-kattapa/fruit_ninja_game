@@ -310,11 +310,13 @@ function playWhooshSound() {
 async function setupHandTracking() {
     loadingScreen.classList.remove('hidden');
     cameraStatus.classList.remove('hidden');
+    cameraStatus.textContent = '📸 Initializing camera...';
     
     try {
+        // Initialize Hands with specific version for better compatibility
         hands = new Hands({
             locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`;
             }
         });
         
@@ -327,24 +329,49 @@ async function setupHandTracking() {
         
         hands.onResults(onHandResults);
         
+        // Request camera access with better status updates
+        cameraStatus.textContent = '📸 Requesting camera permission...';
+        
         camera = new Camera(videoElement, {
             onFrame: async () => {
-                await hands.send({ image: videoElement });
+                if (hands) {
+                    await hands.send({ image: videoElement });
+                }
             },
             width: 1280,
             height: 720
         });
         
+        cameraStatus.textContent = '📸 Starting camera...';
         await camera.start();
         
-        loadingScreen.classList.add('hidden');
-        cameraStatus.classList.add('hidden');
+        cameraStatus.textContent = '✅ Camera ready!';
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden');
+            cameraStatus.classList.add('hidden');
+        }, 1000);
         
     } catch (error) {
         console.error('Error setting up hand tracking:', error);
-        alert('Failed to initialize camera. Please ensure camera permissions are granted.');
         loadingScreen.classList.add('hidden');
-        cameraStatus.textContent = '❌ Camera initialization failed';
+        cameraStatus.classList.remove('hidden');
+        cameraStatus.style.background = 'rgba(255, 0, 0, 0.8)';
+        cameraStatus.textContent = `❌ Error: ${error.message}`;
+        
+        // More helpful error message
+        let helpText = 'Camera initialization failed!\n\n';
+        
+        if (error.name === 'NotAllowedError') {
+            helpText += 'Camera access was denied. Please:\n1. Click the camera icon in the address bar\n2. Allow camera access\n3. Refresh the page';
+        } else if (error.name === 'NotFoundError') {
+            helpText += 'No camera found. Please:\n1. Connect a camera\n2. Refresh the page';
+        } else if (error.name === 'NotReadableError') {
+            helpText += 'Camera is in use by another app. Please:\n1. Close other apps using the camera\n2. Refresh the page';
+        } else {
+            helpText += `Error: ${error.message}\n\nTry:\n1. Allow camera access\n2. Use Chrome browser\n3. Check camera permissions in system settings`;
+        }
+        
+        alert(helpText);
     }
 }
 
