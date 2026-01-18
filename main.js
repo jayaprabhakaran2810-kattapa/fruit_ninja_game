@@ -1,5 +1,6 @@
 // MediaPipe is loaded via CDN scripts in HTML
 // Access via window object for production compatibility
+// Build: 2026-01-18 10:59 IST
 
 // Game State
 const gameState = {
