@@ -132,6 +132,39 @@
         </div>
     </div>
 
-    <script type="module" src="/main.js"></script>
+    <!-- Wait for MediaPipe to load before starting the game -->
+    <script>
+        // Wait for all MediaPipe libraries to load before importing game code
+        function waitForMediaPipe() {
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (window.Hands && window.Camera) {
+                        console.log('MediaPipe libraries loaded successfully');
+                        clearInterval(checkInterval);
+                        resolve();
+                    } else {
+                        console.log('Waiting for MediaPipe libraries...');
+                    }
+                }, 100);
+                
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    if (!window.Hands || !window.Camera) {
+                        console.error('MediaPipe libraries failed to load after 10 seconds');
+                        alert('Failed to load hand tracking libraries. Please refresh the page.');
+                    }
+                }, 10000);
+            });
+        }
+        
+        // Load main.js after MediaPipe is ready
+        waitForMediaPipe().then(() => {
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = '/main.js';
+            document.body.appendChild(script);
+        });
+    </script>
 </body>
 </html>
