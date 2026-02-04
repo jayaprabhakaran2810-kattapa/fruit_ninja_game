@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Tracking Diagnostics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        #video {
+            width: 640px;
+            height: 480px;
+            border: 2px solid #4CAF50;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .video-container {
+            position: relative;
+            display: inline-block;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <h1>🔍 Hand Tracking Diagnostics</h1>
+    
+    <div class="test-section">
+        <h2>1. MediaPipe Libraries</h2>
+        <p id="mediapipe-status">Checking...</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Camera Access</h2>
+        <p id="camera-status">Checking...</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Hand Tracking</h2>
+        <p id="hand-status">Waiting for camera...</p>
+        <p id="hand-detection">Hands detected: <span id="hand-count">0</span></p>
+        <p id="fingertip-info">Fingertips detected: <span id="fingertip-count">0</span></p>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Live Video Feed</h2>
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Logs</h2>
+        <pre id="logs" style="max-height: 200px; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 4px;"></pre>
+    </div>
+
+    <script>
+        const mediapipeStatus = document.getElementById('mediapipe-status');
+        const cameraStatus = document.getElementById('camera-status');
+        const handStatus = document.getElementById('hand-status');
+        const handCount = document.getElementById('hand-count');
+        const fingertipCount = document.getElementById('fingertip-count');
+        const logs = document.getElementById('logs');
+        const videoElement = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logs.textContent += logEntry;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(message);
+        }
+
+        // 1. Check MediaPipe Libraries
+        function checkMediaPipe() {
+            if (window.Hands && window.Camera) {
+                mediapipeStatus.innerHTML = '<span class="success">✅ MediaPipe libraries loaded successfully</span>';
+                log('MediaPipe libraries: OK', 'success');
+                return true;
+            } else {
+                mediapipeStatus.innerHTML = '<span class="error">❌ MediaPipe libraries failed to load</span>';
+                log('MediaPipe libraries: FAILED', 'error');
+                return false;
+            }
+        }
+
+        // 2. Initialize Camera and Hand Tracking
+        async function initializeTracking() {
+            try {
+                log('Starting hand tracking initialization...');
+                
+                if (!checkMediaPipe()) {
+                    setTimeout(initializeTracking, 500);
+                    return;
+                }
+
+                // Initialize Hands
+                const hands = new window.Hands({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                    }
+                });
+
+                hands.setOptions({
+                    maxNumHands: 2,
+                    modelComplexity: 1,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+
+                hands.onResults(onResults);
+                log('Hand tracking configured');
+
+                // Initialize Camera
+                cameraStatus.innerHTML = '<span class="warning">⏳ Requesting camera access...</span>';
+                log('Requesting camera access...');
+                
+                const camera = new window.Camera(videoElement, {
+                    onFrame: async () => {
+                        await hands.send({ image: videoElement });
+                    },
+                    width: 640,
+                    height: 480
+                });
+
+                await camera.start();
+                cameraStatus.innerHTML = '<span class="success">✅ Camera started successfully</span>';
+                handStatus.innerHTML = '<span class="success">✅ Hand tracking active - show your hands!</span>';
+                log('Camera started successfully');
+
+            } catch (error) {
+                cameraStatus.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                log(`Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // 3. Handle Hand Results
+        function onResults(results) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                handCount.textContent = results.multiHandLandmarks.length;
+                
+                let totalFingertips = 0;
+                
+                // Draw hand landmarks
+                results.multiHandLandmarks.forEach(landmarks => {
+                    // Draw all landmarks
+                    landmarks.forEach((landmark, index) => {
+                        const x = landmark.x * canvas.width;
+                        const y = landmark.y * canvas.height;
+                        
+                        // Draw fingertips (indices: 4, 8, 12, 16, 20)
+                        if ([4, 8, 12, 16, 20].includes(index)) {
+                            ctx.fillStyle = '#00ff00';
+                            ctx.beginPath();
+                            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+                            ctx.fill();
+                            totalFingertips++;
+                            
+                            // Draw fingertip label
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = '12px Arial';
+                            ctx.fillText(index, x + 15, y);
+                        } else {
+                            ctx.fillStyle = '#ff0000';
+                            ctx.beginPath();
+                            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                            ctx.fill();
+                        }
+                    });
+                    
+                    // Draw connections
+                    const connections = [
+                        [0, 1], [1, 2], [2, 3], [3, 4],
+                        [0, 5], [5, 6], [6, 7], [7, 8],
+                        [0, 9], [9, 10], [10, 11], [11, 12],
+                        [0, 13], [13, 14], [14, 15], [15, 16],
+                        [0, 17], [17, 18], [18, 19], [19, 20],
+                        [5, 9], [9, 13], [13, 17]
+                    ];
+                    
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.lineWidth = 2;
+                    connections.forEach(([start, end]) => {
+                        const startPoint = landmarks[start];
+                        const endPoint = landmarks[end];
+                        ctx.beginPath();
+                        ctx.moveTo(startPoint.x * canvas.width, startPoint.y * canvas.height);
+                        ctx.lineTo(endPoint.x * canvas.width, endPoint.y * canvas.height);
+                        ctx.stroke();
+                    });
+                });
+                
+                fingertipCount.textContent = totalFingertips;
+            } else {
+                handCount.textContent = '0';
+                fingertipCount.textContent = '0';
+            }
+        }
+
+        // Start diagnostics
+        log('Diagnostics starting...');
+        setTimeout(() => {
+            initializeTracking();
+        }, 1000);
+    </script>
+</body>
+</html>

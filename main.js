@@ -1,6 +1,6 @@
 // MediaPipe is loaded via CDN scripts in HTML
 // Access via window object for production compatibility
-// Build: 2026-01-18 10:59 IST
+// Build: 2026-02-02 21:12 IST - Production Ready
 
 // Game State
 const gameState = {
@@ -73,6 +73,8 @@ const playerNameInput = document.getElementById('playerNameInput');
 const playerNameDisplay = document.getElementById('playerNameDisplay');
 const playerNameEl = document.getElementById('playerName');
 const gameOverPlayerNameEl = document.getElementById('gameOverPlayerName');
+const handDetectionStatus = document.getElementById('handDetectionStatus');
+const handDetectionCount = document.getElementById('handDetectionCount');
 
 // Stats Elements
 const slicedCountEl = document.getElementById('slicedCount');
@@ -437,6 +439,14 @@ function areHandsFromSamePerson(hand1, hand2, maxDistance = 0.6) {
 function onHandResults(results) {
     handCtx.clearRect(0, 0, handCanvas.width, handCanvas.height);
     
+    // Update hand detection status
+    if (gameState.isPlaying && handDetectionStatus) {
+        handDetectionStatus.style.display = 'flex';
+        const handsDetected = results.multiHandLandmarks ? results.multiHandLandmarks.length : 0;
+        handDetectionCount.textContent = `👋 ${handsDetected}`;
+        handDetectionCount.style.color = handsDetected > 0 ? '#4CAF50' : '#f44336';
+    }
+    
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         if (results.multiHandLandmarks.length === 1) {
             // Only one hand detected - use it and update primary center
@@ -541,10 +551,25 @@ function drawHandLandmarks() {
             const y = landmark.y * handCanvas.height;
             
             if (fingerTips.includes(index)) {
+                // Draw collision detection radius (semi-transparent)
+                handCtx.strokeStyle = tipColors[handIndex % tipColors.length];
+                handCtx.lineWidth = 2;
+                handCtx.globalAlpha = 0.3;
+                handCtx.beginPath();
+                handCtx.arc(x, y, 35, 0, 2 * Math.PI); // 35px collision radius
+                handCtx.stroke();
+                
+                // Draw fingertip dot (solid)
+                handCtx.globalAlpha = 1.0;
                 handCtx.fillStyle = tipColors[handIndex % tipColors.length];
                 handCtx.beginPath();
                 handCtx.arc(x, y, 8, 0, 2 * Math.PI);
                 handCtx.fill();
+                
+                // Draw fingertip label
+                handCtx.fillStyle = '#FFFFFF';
+                handCtx.font = '12px Arial';
+                handCtx.fillText(index, x + 12, y - 12);
             } else {
                 handCtx.fillStyle = handColors[handIndex % handColors.length];
                 handCtx.beginPath();
@@ -811,7 +836,7 @@ function gameLoop() {
     // Update speed multiplier based on elapsed time
     const elapsedSeconds = (Date.now() - gameState.gameStartTime) / 1000;
     const speedIncreaseIntervals = Math.floor(elapsedSeconds / 5);
-    gameState.speedMultiplier = 1 + (speedIncreaseIntervals * 0.1);
+    gameState.speedMultiplier = 1 + (speedIncreaseIntervals * 0.18);
     
     // Clear canvas
     gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
@@ -832,7 +857,7 @@ function gameLoop() {
     
     if (handLandmarks && handLandmarks.length > 0) {
         // Loop through each detected hand
-        handLandmarks.forEach(landmarks => {
+        handLandmarks.forEach((landmarks, handIdx) => {
             fingerTips.forEach(tipIndex => {
                 if (landmarks[tipIndex]) {
                     fingerPositions.push({
@@ -842,6 +867,7 @@ function gameLoop() {
                 }
             });
         });
+        
     }
     
     // Update and draw fruits
@@ -918,5 +944,29 @@ function gameLoop() {
     animationFrameId = requestAnimationFrame(gameLoop);
 }
 
-// Initialize game
-init();
+// Wait for MediaPipe libraries to load before initializing
+function waitForMediaPipe() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (window.Hands && window.Camera) {
+                console.log('MediaPipe libraries loaded successfully');
+                clearInterval(checkInterval);
+                resolve();
+            }
+        }, 100);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            if (!window.Hands || !window.Camera) {
+                console.error('MediaPipe libraries failed to load after 10 seconds');
+                alert('Failed to load hand tracking libraries. Please refresh the page.');
+            }
+        }, 10000);
+    });
+}
+
+// Initialize game after MediaPipe is ready
+waitForMediaPipe().then(() => {
+    init();
+});

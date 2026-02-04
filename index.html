@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fruit Ninja - Hand Gesture Game</title>
-    <!-- Build: 2026-01-18 v2.0 -->
+    <!-- Build: 2026-02-02 v2.1 - Production Ready -->
     <link rel="stylesheet" href="./style.css">
     <!-- Load MediaPipe from CDN to avoid bundling issues -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -33,6 +33,10 @@
                 <div class="stat-item" id="playerNameDisplay" style="display: none;">
                     <span class="stat-label">Player:</span>
                     <span id="playerName" class="stat-value">Guest</span>
+                </div>
+                <div class="stat-item" id="handDetectionStatus" style="display: none;">
+                    <span class="stat-label">Hands:</span>
+                    <span id="handDetectionCount" class="stat-value">👋 0</span>
                 </div>
             </div>
         </header>
@@ -133,39 +137,7 @@
         </div>
     </div>
 
-    <!-- Wait for MediaPipe to load before starting the game -->
-    <script>
-        // Wait for all MediaPipe libraries to load before importing game code
-        function waitForMediaPipe() {
-            return new Promise((resolve) => {
-                const checkInterval = setInterval(() => {
-                    if (window.Hands && window.Camera) {
-                        console.log('MediaPipe libraries loaded successfully');
-                        clearInterval(checkInterval);
-                        resolve();
-                    } else {
-                        console.log('Waiting for MediaPipe libraries...');
-                    }
-                }, 100);
-                
-                // Timeout after 10 seconds
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    if (!window.Hands || !window.Camera) {
-                        console.error('MediaPipe libraries failed to load after 10 seconds');
-                        alert('Failed to load hand tracking libraries. Please refresh the page.');
-                    }
-                }, 10000);
-            });
-        }
-        
-        // Load main.js after MediaPipe is ready
-        waitForMediaPipe().then(() => {
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = '/main.js';
-            document.body.appendChild(script);
-        });
-    </script>
+    <!-- Load main game script - Vite will handle bundling -->
+    <script type="module" src="/main.js"></script>
 </body>
 </html>
